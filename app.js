@@ -1,119 +1,90 @@
-//EVENTS
-
-const events = require("node:events");
-
-const eventEmitter = new events();
-
-eventEmitter.on("click", () => {
-  console.log("click click click");
-});
-
-eventEmitter.emit("click", { data: "hello" });
-eventEmitter.emit("click");
-eventEmitter.emit("click");
-eventEmitter.emit("click");
-eventEmitter.emit("click");
-
-eventEmitter.once("clickAndDie", () => {
-  console.log("Clicked and died.");
-});
-
-console.log(eventEmitter.eventNames());
-
-eventEmitter.emit("clickAndDie");
-eventEmitter.emit("clickAndDie");
-eventEmitter.emit("clickAndDie");
-
-console.log(eventEmitter.eventNames());
-
-//STREAMS
-const fs = require("fs");
-const path = require("path");
-
-const readStream = fs.createReadStream(
-  "myrnyy-panas-khiba-revut-voly-iak-iasla-povni.html",
-  { highWaterMark: 128 * 1024 }
-);
-
-const writeStream = fs.createWriteStream("test2.html");
-
-// readStream.on("data", (chank) => {
-//   writeStream.write(chank);
-// });
-
-readStream
-  .on("error", (err) => {
-    console.log(err);
-    readStream.destroy();
-    writeStream.end("ERROR ON READING FILE");
-  })
-  .pipe(writeStream);
-
-//EXPRESS
-
-const users = [
-  {
-    name: "Oleksandr",
-    age: 38,
-    gender: "male",
-  },
-  {
-    name: "Stepan",
-    age: 39,
-    gender: "male",
-  },
-  {
-    name: "Andriy",
-    age: 40,
-    gender: "male",
-  },
-  {
-    name: "Viktor",
-    age: 41,
-    gender: "male",
-  },
-  {
-    name: "Kateryna",
-    age: 35,
-    gender: "female",
-  },
-];
-
 const express = require("express");
 const app = express();
+const fileService = require("./file.service");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/users", (req, res) => {
-  res.status(200).json(users);
+app.get("/users", async (req, res) => {
+  const users = await fileService.readDB();
+  res.json(users);
 });
 
-app.get("/users/:userId", (req, res) => {
+app.get("/users/:userId", async (req, res) => {
   const { userId } = req.params;
-  res.status(200).json(users[+userId - 1]);
+  const users = await fileService.readDB();
+  const user = users.find((user) => user.id === +userId);
+  if (!user) {
+    return res.status(422).json({ message: "User does not exists" });
+  }
+  res.json(user);
 });
 
-app.post("/users", (req, res) => {
-  users.push(req.body);
-  res.status(201).json({ message: "User created" });
-});
+app.post("/users", async (req, res) => {
+  const { name, age } = req.body;
+  if (!name || name.length < 3) {
+    res.status(401).json({ message: "Name is invalid" });
+  }
 
-app.put("/users/:userId", (req, res) => {
-  const { userId } = req.params;
-  users[+userId - 1] = req.body;
+  if (!age || age < 0 || age > 150) {
+    res.status(401).json({ message: "Age is invalid" });
+  }
 
-  res.status(200).json({
-    message: "User updated",
-    data: users[+userId - 1],
+  const users = await fileService.readDB();
+  const newUser = {
+    id: users.length ? users[users.length - 1].id + 1 : 1,
+    name,
+    age,
+  };
+  users.push(newUser);
+  await fileService.writeDB(users);
+
+  res.status(201).json({
+    message: "User created",
+    user: newUser,
   });
 });
 
-app.delete("/users/:userId", (req, res) => {
+app.patch("/users/:userId", async (req, res) => {
   const { userId } = req.params;
-  users.splice(+userId - 1, 1);
+  const { name, age } = req.body;
+  if (!name || name.length < 3) {
+    res.status(401).json({ message: "Name is invalid" });
+  }
 
-  res.status(200).json({ message: "User deleted" });
+  if (!age || age < 0 || age > 150) {
+    res.status(401).json({ message: "Age is invalid" });
+  }
+
+  const users = await fileService.readDB();
+  const user = users.find((user) => user.id === +userId);
+  if (!user) {
+    return res.status(422).json({ message: "User does not exist" });
+  }
+
+  if (name) {
+    user.name = name;
+  }
+
+  if (age) {
+    user.age = age;
+  }
+
+  fileService.writeDB(users);
+  res.status(201).json(user);
+});
+
+app.delete("/users/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const users = await fileService.readDB();
+  const index = users.findIndex((user) => user.id === +userId);
+  if (index === -1) {
+    return res.status(422).json({ message: "User does not exist" });
+  }
+
+  users.splice(index, 1);
+  fileService.writeDB(users);
+  res.sendStatus(204);
 });
 
 const PORT = 5100;
