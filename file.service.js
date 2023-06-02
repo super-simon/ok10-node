@@ -5,7 +5,7 @@ const usersFile = path.join(process.cwd(), "users.json");
 
 const readAllUsers = async () => {
   const fileData = await fs.readFile(usersFile, { encoding: "utf8" });
-  return await JSON.parse(fileData);
+  return fileData ? JSON.parse(fileData) : [];
 };
 
 const writeAllUsers = async (users) => {
