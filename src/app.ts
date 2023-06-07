@@ -1,11 +1,13 @@
 //EXPRESS
-import express from "express";
+import express, { NextFunction } from "express";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 
 import { configs } from "./configs/config";
 import { User } from "./models/User.model";
 import { IUser } from "./types/user.type";
+import { ApiError } from "./errors";
+import { UserValidator } from "./validators";
 
 const app = express();
 
@@ -38,12 +40,21 @@ app.get(
 
 app.post(
   "/users",
-  async (req: Request, res: Response): Promise<Response<IUser> | void> => {
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response<IUser> | void> => {
     try {
-      const createdUser = await User.create(req.body);
+      const { error, value } = UserValidator.create.validate(req.body);
+      if (error) {
+        throw new ApiError(error.message, 400);
+      }
+
+      const createdUser = await User.create(value);
       return res.status(201).json(createdUser);
     } catch (e) {
-      console.log(e);
+      next(e);
     }
   }
 );
@@ -52,11 +63,14 @@ app.put(
   "/users/:id",
   async (req: Request, res: Response): Promise<Response<IUser> | void> => {
     try {
-      const updatedUser = await User.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { returnDocument: "after" }
-      );
+      const { error, value } = UserValidator.update.validate(req.body);
+      if (error) {
+        throw new ApiError(error.message, 400);
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(req.params.id, value, {
+        returnDocument: "after",
+      });
       res.json(updatedUser);
     } catch (e) {
       console.log(e);
@@ -75,6 +89,15 @@ app.delete(
     }
   }
 );
+
+app.use((err: ApiError, _req: Request, res: Response, _next: NextFunction) => {
+  const status = err.status || 500;
+
+  return res.status(status).json({
+    message: err.message,
+    status,
+  });
+});
 
 app.listen(configs.PORT, () => {
   mongoose.connect(configs.DB_URL as string);
