@@ -1,12 +1,12 @@
-import { ObjectId } from "mongoose";
-
-import { EGenders } from "../eums/user.enum";
+import { Types } from "mongoose";
 
 export interface IUser {
-  _id: ObjectId;
-  name: string;
-  age: number;
-  gender: EGenders;
+  _id: Types.ObjectId;
+  name?: string;
+  age?: number;
+  gender?: string;
   email: string;
   password: string;
 }
+
+export type IUserWithoutPassword = Omit<IUser, "password">;
