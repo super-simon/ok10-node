@@ -28,7 +28,8 @@ class CommonMiddleware {
         if (error) {
           throw new ApiError(error.message, 400);
         }
-        req.res.locals = value;
+        // req.res.locals = value;
+        req.body = value;
         next();
       } catch (e) {
         next(e);

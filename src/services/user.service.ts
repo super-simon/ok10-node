@@ -5,13 +5,7 @@ import { IUser, IUserWithoutPassword } from "../types/user.type";
 
 class UserService {
   public async findAll(): Promise<IUserWithoutPassword[]> {
-    try {
-      console.log(await User.find().select("-password"));
-      console.log(User.find().select("-password"));
-      return await User.find().select("-password");
-    } catch (e) {
-      throw new ApiError(e.message, e.status);
-    }
+    return await User.find();
   }
 
   public async create(data: IUser): Promise<IUser> {
@@ -19,17 +13,29 @@ class UserService {
   }
 
   public async findById(id: string): Promise<IUser | null> {
-    return await User.findById(id);
+    return await this.getOneByIdOrThrow(id);
   }
 
   public async updateById(id: string, data: IUser): Promise<IUser | null> {
+    await this.getOneByIdOrThrow(id);
+
     return await User.findByIdAndUpdate(id, data, {
       returnDocument: "after",
     });
   }
 
   public async deleteById(id: string): Promise<IUser | null> {
+    await this.getOneByIdOrThrow(id);
+
     return await User.findByIdAndDelete(id);
+  }
+
+  private async getOneByIdOrThrow(userId: string): Promise<IUser> {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new ApiError("User does not exists", 422);
+    }
+    return user;
   }
 }
 
