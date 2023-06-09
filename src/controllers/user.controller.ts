@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 
+import { ApiError } from "../errors";
 import { userService } from "../services/user.service";
 import { IUser } from "../types/user.type";
-import { ApiError } from "../errors";
 import { UserValidator } from "../validators";
 
 class UserController {

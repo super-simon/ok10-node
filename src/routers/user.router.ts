@@ -1,13 +1,18 @@
 import { Router } from "express";
 
 import { userController } from "../controllers/user.controller";
-import { userMiddleware } from "../moddlewares/user.middleware";
+import { commonMiddleware, userMiddleware } from "../middlewares";
 
 const router = Router();
 
 router.get("/", userController.findAll);
 
-router.post("/", userMiddleware.isCreateValid, userController.create);
+router.post(
+  "/",
+  userMiddleware.isIdValid,
+  commonMiddleware.isCreateValid,
+  userController.create
+);
 
 router.get("/:id", userController.findById);
 

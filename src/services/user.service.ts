@@ -6,6 +6,8 @@ import { IUser, IUserWithoutPassword } from "../types/user.type";
 class UserService {
   public async findAll(): Promise<IUserWithoutPassword[]> {
     try {
+      console.log(await User.find().select("-password"));
+      console.log(User.find().select("-password"));
       return await User.find().select("-password");
     } catch (e) {
       throw new ApiError(e.message, e.status);
