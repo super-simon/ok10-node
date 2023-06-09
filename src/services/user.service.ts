@@ -1,13 +1,19 @@
 import { User } from "../models/User.model";
+import { userRepository } from "../repositories/user.repository";
 import { IUser, IUserWithoutPassword } from "../types/user.type";
+import { ApiError } from "../errors";
 
 class UserService {
   public async findAll(): Promise<IUserWithoutPassword[]> {
-    return User.find().select("-password");
+    try {
+      return User.find().select("-password");
+    } catch (e) {
+      throw new ApiError(e.message, e.status);
+    }
   }
 
   public async create(data: IUser): Promise<IUser> {
-    return User.create(data);
+    return userRepository.create(data);
   }
 
   public async findById(id: string): Promise<IUser | null> {

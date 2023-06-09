@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 
-import { User } from "../models/User.model";
 import { userService } from "../services/user.service";
 import { IUser } from "../types/user.type";
 import { ApiError } from "../errors";
@@ -9,13 +8,14 @@ import { UserValidator } from "../validators";
 class UserController {
   public async findAll(
     _req: Request,
-    res: Response
+    res: Response,
+    next: NextFunction
   ): Promise<Response<IUser[]> | void> {
     try {
       const users = await userService.findAll();
       return res.json(users);
     } catch (e) {
-      console.log(e);
+      next(e);
     }
   }
 
