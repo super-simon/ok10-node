@@ -34,19 +34,21 @@ class UserController {
 
   public async findById(
     req: Request,
-    res: Response
+    res: Response,
+    next: NextFunction
   ): Promise<Response<IUser> | void> {
     try {
-      const user = await userService.findById(req.params.id);
+      const user = await userService.findById(req.params.userId);
       res.json(user);
     } catch (e) {
-      console.log(e);
+      next(e);
     }
   }
 
   public async updateById(
     req: Request,
-    res: Response
+    res: Response,
+    next: NextFunction
   ): Promise<Response<IUser> | void> {
     try {
       const { error, value } = UserValidator.update.validate(req.body);
@@ -54,22 +56,26 @@ class UserController {
         throw new ApiError(error.message, 400);
       }
 
-      const updatedUser = await userService.updateById(req.params.id, value);
+      const updatedUser = await userService.updateById(
+        req.params.userId,
+        value
+      );
       res.json(updatedUser);
     } catch (e) {
-      console.log(e);
+      next(e);
     }
   }
 
   public async deleteById(
     req: Request,
-    res: Response
+    res: Response,
+    next: NextFunction
   ): Promise<Response<IUser> | void> {
     try {
-      const updatedUser = await userService.deleteById(req.params.id);
+      const updatedUser = await userService.deleteById(req.params.userId);
       res.json(updatedUser);
     } catch (e) {
-      console.log(e);
+      next(e);
     }
   }
 }
