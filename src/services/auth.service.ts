@@ -16,11 +16,12 @@ class AuthService {
     }
   }
 
-  public async login(
-    credentials: ICredentials,
-    user: IUser
-  ): Promise<ITokenPair> {
+  public async login(credentials: ICredentials): Promise<ITokenPair> {
     try {
+      const user = await User.findOne({ email: credentials.email }).select(
+        "password"
+      );
+
       const isMatched = await passwordService.compare(
         credentials.password,
         user.password
@@ -31,7 +32,7 @@ class AuthService {
       }
 
       const tokenPair = await tokenService.generateTokenPair({
-        _id: user._id,
+        _id: user._id.toString(),
         name: user.name,
       });
 
