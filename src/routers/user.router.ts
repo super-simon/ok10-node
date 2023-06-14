@@ -23,6 +23,7 @@ router.put(
   commonMiddleware.isBodyValid(UserValidator.update),
   userController.updateById
 );
+router.delete("/", userController.deleteAll);
 router.delete(
   "/:userId",
   commonMiddleware.isIdValid("userId"),

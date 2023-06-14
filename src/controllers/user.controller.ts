@@ -68,7 +68,20 @@ class UserController {
   ): Promise<Response<IUser> | void> {
     try {
       await userService.deleteById(req.params.userId);
-      res.status(204);
+      res.sendStatus(204);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async deleteAll(
+    _req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response<IUser> | void> {
+    try {
+      await userService.deleteAll();
+      res.sendStatus(204);
     } catch (e) {
       next(e);
     }

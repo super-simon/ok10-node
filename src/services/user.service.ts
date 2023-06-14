@@ -24,6 +24,12 @@ class UserService {
     });
   }
 
+  public async deleteAll(): Promise<IUser[]> {
+    await User.deleteMany();
+
+    return [];
+  }
+
   public async deleteById(id: string): Promise<IUser | null> {
     await this.getOneByIdOrThrow(id);
 
