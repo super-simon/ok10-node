@@ -16,12 +16,11 @@ class AuthService {
     }
   }
 
-  public async login(credentials: ICredentials): Promise<ITokenPair> {
+  public async login(
+    credentials: ICredentials,
+    user: IUser
+  ): Promise<ITokenPair> {
     try {
-      const user = await User.findOne({ email: credentials.email }).select(
-        "password"
-      );
-
       const isMatched = await passwordService.compare(
         credentials.password,
         user.password

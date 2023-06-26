@@ -39,7 +39,7 @@ class UserService {
   private async getOneByIdOrThrow(userId: string): Promise<IUser> {
     const user = await User.findById(userId);
     if (!user) {
-      throw new ApiError("User does not exists", 422);
+      throw new ApiError("User does not exist", 422);
     }
     return user;
   }
