@@ -1,8 +1,10 @@
 import { ApiError } from "../errors";
+import { EEmailActions } from "../eums/email.enum";
 import { Token } from "../models/Token.model";
 import { User } from "../models/User.model";
 import { ICredentials, ITokenPair } from "../types/token.types";
 import { IUser } from "../types/user.type";
+import { emailService } from "./email.service";
 import { passwordService } from "./password.service";
 import { tokenService } from "./token.service";
 
@@ -10,7 +12,11 @@ class AuthService {
   public async register(data: IUser): Promise<void> {
     try {
       const hashedPassword = await passwordService.hash(data.password);
+
       await User.create({ ...data, password: hashedPassword });
+      await emailService.sendMail(data.email, EEmailActions.WELLCOME, {
+        name: data.name,
+      });
     } catch (e) {
       throw new ApiError(e.message, e.status);
     }
@@ -30,7 +36,7 @@ class AuthService {
         throw new ApiError("Invalid Email or password", 401);
       }
 
-      const tokenPair = await tokenService.generateTokenPair({
+      const tokenPair = tokenService.generateTokenPair({
         _id: user._id.toString(),
         name: user.name,
       });
