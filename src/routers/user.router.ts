@@ -11,6 +11,7 @@ router.get("/", userController.findAll);
 
 router.get(
   "/:userId",
+  authMiddleware.checkAccessToken,
   commonMiddleware.isIdValid("userId"),
   userController.findById
 );

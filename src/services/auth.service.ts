@@ -2,7 +2,7 @@ import { ApiError } from "../errors";
 import { EEmailActions } from "../eums/email.enum";
 import { Token } from "../models/Token.model";
 import { User } from "../models/User.model";
-import { ICredentials, ITokenPair } from "../types/token.types";
+import { ICredentials, ITokenPair, ITokenPayload } from "../types/token.types";
 import { IUser } from "../types/user.type";
 import { emailService } from "./email.service";
 import { passwordService } from "./password.service";
@@ -45,6 +45,24 @@ class AuthService {
         ...tokenPair,
         _userId: user._id,
       });
+
+      return tokenPair;
+    } catch (e) {
+      throw new ApiError(e.message, e.status);
+    }
+  }
+
+  public async refresh(
+    oldTokenPair: ITokenPair,
+    tokenPayload: ITokenPayload
+  ): Promise<ITokenPair> {
+    try {
+      const tokenPair = tokenService.generateTokenPair(tokenPayload);
+
+      await Promise.all([
+        Token.deleteOne({ refreshToken: oldTokenPair.refreshToken }),
+        Token.create({ _userId: tokenPayload._id, ...tokenPair }),
+      ]);
 
       return tokenPair;
     } catch (e) {
