@@ -23,6 +23,13 @@ router.post(
 );
 
 router.post(
+  "/change-password",
+  commonMiddleware.isBodyValid(UserValidator.changePassword),
+  authMiddleware.checkAccessToken,
+  authController.changePassword
+);
+
+router.post(
   "/refresh",
   authMiddleware.checkRefreshToken,
   authController.refresh

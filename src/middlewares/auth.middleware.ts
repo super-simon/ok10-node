@@ -18,16 +18,14 @@ class AuthMiddleware {
         throw new ApiError("Authorization required", 401);
       }
 
-      tokenService.checkToken(accessToken, ETokenType.Access);
+      const payload = tokenService.checkToken(accessToken, ETokenType.Access);
 
       const tokenEntity = await Token.findOne({ accessToken });
 
       if (!tokenEntity) {
         throw new ApiError("Authorization is not valid", 401);
       }
-
-      // req.res.locals.tokenInfo = tokenEntity;
-
+      req.res.locals.tokenPayload = { name: payload.name, _id: payload._id };
       next();
     } catch (e) {
       next(e);

@@ -24,12 +24,24 @@ class AuthController {
     next: NextFunction
   ): Promise<Response<ITokenPair>> {
     try {
-      const tokensPair = await authService.login(
-        req.body,
-        req.res.locals?.user
-      );
+      const tokensPair = await authService.login(req.body, req.res.locals.user);
 
       return res.json({ ...tokensPair });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async changePassword(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response<ITokenPair>> {
+    try {
+      const { _id: userId } = req.res.locals.tokenPayload as ITokenPayload;
+      await authService.changePassword(req.body, userId);
+
+      return res.sendStatus(201);
     } catch (e) {
       next(e);
     }

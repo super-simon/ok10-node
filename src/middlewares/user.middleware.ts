@@ -36,14 +36,13 @@ class UserMiddleware {
     ): Promise<void> => {
       try {
         const user = await User.findOne({ [field]: req.body[field] }).select(
-          "password"
+          "password name"
         );
         if (!user) {
           throw new ApiError("User not found", 422);
         }
 
         req.res.locals.user = user;
-
         next();
       } catch (e) {
         next(e);
